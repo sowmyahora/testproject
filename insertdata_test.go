@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Testinsertuser(t *testing.T) {
+func TestInsertuser(t *testing.T) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		t.Fatalf("Failed to connect to MongoDB: %v", err)
@@ -43,7 +44,7 @@ func Testinsertuser(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	insertuser(rr, req)
+	insertUser(rr, req)
 
 	if rr.Code != http.StatusCreated {
 		t.Errorf("Expected status code %d, got %d", http.StatusCreated, rr.Code)
