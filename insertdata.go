@@ -34,6 +34,11 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if user.Name == "" {
+		http.Error(w, "Invalid user: Name cannot be empty", http.StatusBadRequest)
+		return
+	}
+
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatal(err)
