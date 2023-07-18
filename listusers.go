@@ -11,21 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type address struct {
-	Street  string `bson:"Street"`
-	City    string `bson:"City"`
-	State   string `bson:"State"`
-	Country string `bson:"Country"`
-}
-
-type User struct {
-	User_id int64    `bson:"User_id"`
-	Name    string   `bson:"Name"`
-	Phone   string   `bson:"Phone"`
-	Address address  `bson:"Address"`
-	Hobbies []string `bson:"Hobbies"`
-}
-
 func listUsers(w http.ResponseWriter, r *http.Request) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
