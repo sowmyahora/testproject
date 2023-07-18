@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -19,12 +18,11 @@ type address struct {
 }
 
 type User struct {
-	User_id        int64    `bson:"User_id"`
-	Name           string   `bson:"Name"`
-	Phone          string   `bson:"Phone"`
-	Address        address  `bson:"Address"`
-	Hobbies        []string `bson:"Hobbies"`
-	ProfilePicture []byte   `bson:"ProfilePicture"`
+	User_id int64    `bson:"User_id"`
+	Name    string   `bson:"Name"`
+	Phone   string   `bson:"Phone"`
+	Address address  `bson:"Address"`
+	Hobbies []string `bson:"Hobbies"`
 }
 
 func insertUser(w http.ResponseWriter, r *http.Request) {
@@ -41,14 +39,6 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	defer client.Disconnect(context.TODO())
-
-	profilepic, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Failed to read profile image: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	user.ProfilePicture = profilepic
 
 	collection := client.Database("testdb").Collection("users")
 
