@@ -60,3 +60,11 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("User created successfully"))
 }
+
+func main() {
+
+	http.HandleFunc("/users/insert", insertUser)
+
+	log.Println("Server started on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
