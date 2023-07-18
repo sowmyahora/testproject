@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func TestInsertuser(t *testing.T) {
+func TestInsertUser(t *testing.T) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		t.Fatalf("Failed to connect to MongoDB: %v", err)
@@ -57,7 +57,7 @@ func TestInsertuser(t *testing.T) {
 
 }
 
-func TestInsertuserwrong(t *testing.T) {
+func TestInsertUserInvalidData(t *testing.T) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		t.Fatalf("Failed to connect to MongoDB: %v", err)
