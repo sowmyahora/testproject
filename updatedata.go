@@ -25,7 +25,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	defer client.Disconnect(context.TODO())
 
 	collection := client.Database("testdb").Collection("users")
-	filter := bson.M{"User_id": int64(user.User_id)}
+	filter := bson.M{"User_id": int64(user.user_id)}
 
 	var existingUser User
 	err = collection.FindOne(context.TODO(), filter).Decode(&existingUser)
@@ -38,10 +38,10 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Existing user: %+v", existingUser)
 
 	update := bson.M{"$set": bson.M{
-		"Name":    user.Name,
-		"Phone":   user.Phone,
-		"Address": user.Address,
-		"Hobbies": user.Hobbies,
+		"Name":    user.name,
+		"Phone":   user.phone,
+		"Address": user.address,
+		"Hobbies": user.hobbies,
 	}}
 
 	result, err := collection.UpdateOne(context.TODO(), filter, update)

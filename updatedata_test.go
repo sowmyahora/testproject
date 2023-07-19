@@ -20,16 +20,16 @@ func TestUpdateUser(t *testing.T) {
 	defer client.Disconnect(context.TODO())
 
 	user := User{
-		User_id: 97659,
-		Name:    "Ansh Lokhande",
-		Phone:   "000000000",
-		Address: address{
-			Street:  "street 151",
-			City:    "Jammu",
-			State:   "J&K",
-			Country: "India",
+		user_id: 97659,
+		name:    "Ansh Lokhande",
+		phone:   "000000000",
+		address: address{
+			street:  "street 151",
+			city:    "Jammu",
+			state:   "J&K",
+			country: "India",
 		},
-		Hobbies: []string{"Reading", "Gaming", "Cooking"},
+		hobbies: []string{"Reading", "Gaming", "Cooking"},
 	}
 
 	userJSON, err := json.Marshal(user)
@@ -64,16 +64,16 @@ func TestUpdateUserInvalidData(t *testing.T) {
 	defer client.Disconnect(context.TODO())
 
 	user := User{
-		User_id: 2001,
-		Name:    "Rakesh Lokhande",
-		Phone:   "000000000",
-		Address: address{
-			Street:  "street 151",
-			City:    "Jammu",
-			State:   "J&K",
-			Country: "India",
+		user_id: 2001,
+		name:    "Rakesh Lokhande",
+		phone:   "000000000",
+		address: address{
+			street:  "street 151",
+			city:    "Jammu",
+			state:   "J&K",
+			country: "India",
 		},
-		Hobbies: []string{"Reading", "Gaming", "Cooking"},
+		hobbies: []string{"Reading", "Gaming", "Cooking"},
 	}
 
 	userJSON, err := json.Marshal(user)

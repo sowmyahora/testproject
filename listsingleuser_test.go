@@ -19,28 +19,28 @@ func TestListSingleUser(t *testing.T) {
 
 	users := []User{
 		{
-			User_id: 890078,
-			Name:    "Sonia Khera",
-			Phone:   "9910470030",
-			Address: address{
-				Street:  "Street 1",
-				City:    "New York",
-				State:   "NY",
-				Country: "USA",
+			user_id: 890078,
+			name:    "Sonia Khera",
+			phone:   "9910470030",
+			address: address{
+				street:  "Street 1",
+				city:    "New York",
+				state:   "NY",
+				country: "USA",
 			},
-			Hobbies: []string{"Reading", "Gaming", "Cooking"},
+			hobbies: []string{"Reading", "Gaming", "Cooking"},
 		},
 		{
-			User_id: 817886,
-			Name:    "Sam Manchanda",
-			Phone:   "987657899",
-			Address: address{
-				Street:  "Street 2",
-				City:    "Los Angeles",
-				State:   "CA",
-				Country: "USA",
+			user_id: 817886,
+			name:    "Sam Manchanda",
+			phone:   "987657899",
+			address: address{
+				street:  "Street 2",
+				city:    "Los Angeles",
+				state:   "CA",
+				country: "USA",
 			},
-			Hobbies: []string{"Traveling", "Photography", "Painting"},
+			hobbies: []string{"Traveling", "Photography", "Painting"},
 		},
 	}
 
@@ -80,28 +80,28 @@ func TestListSingleUserInvalidData(t *testing.T) {
 
 	users := []User{
 		{
-			User_id: 890078,
-			Name:    "Sonia Khera",
-			Phone:   "9910470030",
-			Address: address{
-				Street:  "Street 1",
-				City:    "New York",
-				State:   "NY",
-				Country: "USA",
+			user_id: 890078,
+			name:    "Sonia Khera",
+			phone:   "9910470030",
+			address: address{
+				street:  "Street 1",
+				city:    "New York",
+				state:   "NY",
+				country: "USA",
 			},
-			Hobbies: []string{"Reading", "Gaming", "Cooking"},
+			hobbies: []string{"Reading", "Gaming", "Cooking"},
 		},
 		{
-			User_id: 817886,
-			Name:    "Sam Manchanda",
-			Phone:   "987657899",
-			Address: address{
-				Street:  "Street 2",
-				City:    "Los Angeles",
-				State:   "CA",
-				Country: "USA",
+			user_id: 817886,
+			name:    "Sam Manchanda",
+			phone:   "987657899",
+			address: address{
+				street:  "Street 2",
+				city:    "Los Angeles",
+				state:   "CA",
+				country: "USA",
 			},
-			Hobbies: []string{"Traveling", "Photography", "Painting"},
+			hobbies: []string{"Traveling", "Photography", "Painting"},
 		},
 	}
 

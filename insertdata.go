@@ -11,18 +11,18 @@ import (
 )
 
 type address struct {
-	Street  string `bson:"Street"`
-	City    string `bson:"City"`
-	State   string `bson:"State"`
-	Country string `bson:"Country"`
+	street  string `bson:"Street"`
+	city    string `bson:"City"`
+	state   string `bson:"State"`
+	country string `bson:"Country"`
 }
 
 type User struct {
-	User_id int64    `bson:"User_id"`
-	Name    string   `bson:"Name"`
-	Phone   string   `bson:"Phone"`
-	Address address  `bson:"Address"`
-	Hobbies []string `bson:"Hobbies"`
+	user_id int64    `bson:"User_id"`
+	name    string   `bson:"Name"`
+	phone   string   `bson:"Phone"`
+	address address  `bson:"Address"`
+	hobbies []string `bson:"Hobbies"`
 }
 
 func insertUser(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +34,7 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Name == "" {
+	if user.name == "" {
 		http.Error(w, "Invalid user: Name cannot be empty", http.StatusBadRequest)
 		return
 	}
