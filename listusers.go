@@ -28,19 +28,19 @@ func listUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	defer cursor.Close(context.TODO())
 
-	var users []User
+	var Users []user
 	for cursor.Next(context.TODO()) {
-		var user User
-		err := cursor.Decode(&user)
+		var User user
+		err := cursor.Decode(&User)
 		if err != nil {
 			log.Println("Error decoding user:", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		users = append(users, user)
+		Users = append(Users, User)
 	}
 
-	usersJSON, err := json.Marshal(users)
+	usersJSON, err := json.Marshal(Users)
 	if err != nil {
 		log.Println("Error marshaling users to JSON:", err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -18,21 +18,21 @@ func TestDeleteUser(t *testing.T) {
 	}
 	defer client.Disconnect(context.TODO())
 
-	user := User{
-		user_id: 890078,
-		name:    "Sonia Khera",
-		phone:   "9910470030",
-		address: address{
-			street:  "Street 1",
-			city:    "New York",
-			state:   "NY",
-			country: "USA",
+	User := user{
+		User_id: 890078,
+		Name:    "Sonia Khera",
+		Phone:   "9910470030",
+		Address: address{
+			Street:  "Street 1",
+			City:    "New York",
+			State:   "NY",
+			Country: "USA",
 		},
-		hobbies: []string{"Reading", "Gaming", "Cooking"},
+		Hobbies: []string{"Reading", "Gaming", "Cooking"},
 	}
 
 	collection := client.Database("testdb").Collection("users")
-	_, err = collection.InsertOne(context.TODO(), user)
+	_, err = collection.InsertOne(context.TODO(), User)
 	if err != nil {
 		t.Fatalf("Failed to insert user: %v", err)
 	}
@@ -63,21 +63,21 @@ func TestDeleteUserInvalidData(t *testing.T) {
 	}
 	defer client.Disconnect(context.TODO())
 
-	user := User{
-		user_id: 877,
-		name:    "Sonia Khera",
-		phone:   "9910470030",
-		address: address{
-			street:  "Street 1",
-			city:    "New York",
-			state:   "NY",
-			country: "USA",
+	User := user{
+		User_id: 877,
+		Name:    "Sonia Khera",
+		Phone:   "9910470030",
+		Address: address{
+			Street:  "Street 1",
+			City:    "New York",
+			State:   "NY",
+			Country: "USA",
 		},
-		hobbies: []string{"Reading", "Gaming", "Cooking"},
+		Hobbies: []string{"Reading", "Gaming", "Cooking"},
 	}
 
 	collection := client.Database("testdb").Collection("users")
-	_, err = collection.InsertOne(context.TODO(), user)
+	_, err = collection.InsertOne(context.TODO(), User)
 	if err != nil {
 		t.Fatalf("Failed to insert user: %v", err)
 	}

@@ -11,30 +11,30 @@ import (
 )
 
 type address struct {
-	street  string `bson:"Street"`
-	city    string `bson:"City"`
-	state   string `bson:"State"`
-	country string `bson:"Country"`
+	Street  string `bson:"Street"`
+	City    string `bson:"City"`
+	State   string `bson:"State"`
+	Country string `bson:"Country"`
 }
 
-type User struct {
-	user_id int64    `bson:"User_id"`
-	name    string   `bson:"Name"`
-	phone   string   `bson:"Phone"`
-	address address  `bson:"Address"`
-	hobbies []string `bson:"Hobbies"`
+type user struct {
+	User_id int64    `bson:"User_id"`
+	Name    string   `bson:"Name"`
+	Phone   string   `bson:"Phone"`
+	Address address  `bson:"Address"`
+	Hobbies []string `bson:"Hobbies"`
 }
 
 func insertUser(w http.ResponseWriter, r *http.Request) {
-	var user User
+	var User user
 
-	err := json.NewDecoder(r.Body).Decode(&user)
+	err := json.NewDecoder(r.Body).Decode(&User)
 	if err != nil {
 		http.Error(w, "Failed to parse request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if user.name == "" {
+	if User.Name == "" {
 		http.Error(w, "Invalid user: Name cannot be empty", http.StatusBadRequest)
 		return
 	}
@@ -47,7 +47,7 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 
 	collection := client.Database("testdb").Collection("users")
 
-	_, err = collection.InsertOne(context.TODO(), user)
+	_, err = collection.InsertOne(context.TODO(), User)
 	if err != nil {
 		log.Fatal(err)
 	}
