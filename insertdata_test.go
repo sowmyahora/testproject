@@ -4,18 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func TestInsertUser(t *testing.T) {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := connect()
 	if err != nil {
-		t.Fatalf("Failed to connect to MongoDB: %v", err)
+		log.Fatal(err)
 	}
 	defer client.Disconnect(context.TODO())
 
@@ -58,9 +56,9 @@ func TestInsertUser(t *testing.T) {
 }
 
 func TestInsertUserInvalidData(t *testing.T) {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := connect()
 	if err != nil {
-		t.Fatalf("Failed to connect to MongoDB: %v", err)
+		log.Fatal(err)
 	}
 	defer client.Disconnect(context.TODO())
 

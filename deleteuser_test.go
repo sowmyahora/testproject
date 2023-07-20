@@ -2,19 +2,17 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func TestDeleteUser(t *testing.T) {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := connect()
 	if err != nil {
-		t.Fatalf("Failed to connect to MongoDB: %v", err)
+		log.Fatal(err)
 	}
 	defer client.Disconnect(context.TODO())
 
@@ -37,7 +35,8 @@ func TestDeleteUser(t *testing.T) {
 		t.Fatalf("Failed to insert user: %v", err)
 	}
 
-	req, err := http.NewRequest("DELETE", "http://localhost:8080/users/delete?id=890078", nil)
+	//req, err := http.NewRequest("DELETE", "http://localhost:8080/users/delete?id=890078", nil)
+	req, err := http.NewRequest("DELETE", "mongodb://mongo:27017/users/delete?id=890078", nil)
 	if err != nil {
 		t.Fatalf("Failed to create delete request: %v", err)
 	}
@@ -57,9 +56,9 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestDeleteUserInvalidData(t *testing.T) {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := connect()
 	if err != nil {
-		t.Fatalf("Failed to connect to MongoDB: %v", err)
+		log.Fatal(err)
 	}
 	defer client.Disconnect(context.TODO())
 
@@ -82,7 +81,8 @@ func TestDeleteUserInvalidData(t *testing.T) {
 		t.Fatalf("Failed to insert user: %v", err)
 	}
 
-	req, err := http.NewRequest("DELETE", "http://localhost:8080/users/delete?id=890", nil)
+	//req, err := http.NewRequest("DELETE", "http://localhost:8080/users/delete?id=890", nil)
+	req, err := http.NewRequest("DELETE", "mongodb://mongo:27017/users/delete?id=890078", nil)
 	if err != nil {
 		t.Fatalf("Failed to create delete request: %v", err)
 	}
