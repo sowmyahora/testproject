@@ -19,7 +19,7 @@ func TestInsertUser(t *testing.T) {
 	}
 	defer client.Disconnect(context.TODO())
 
-	user := User{
+	User := user{
 		User_id: 90121,
 		Name:    "Ansh Tiwari",
 		Phone:   "8178860317",
@@ -32,7 +32,7 @@ func TestInsertUser(t *testing.T) {
 		Hobbies: []string{"Playing Cricket", "Cooking", "Swimming"},
 	}
 
-	userJSON, err := json.Marshal(user)
+	userJSON, err := json.Marshal(User)
 	if err != nil {
 		t.Fatalf("Failed to marshal user object: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestInsertUserInvalidData(t *testing.T) {
 	}
 	defer client.Disconnect(context.TODO())
 
-	user := User{
+	User := user{
 		User_id: 90121,
 		Name:    "",
 		Phone:   "8178860317",
@@ -77,7 +77,7 @@ func TestInsertUserInvalidData(t *testing.T) {
 		Hobbies: []string{"Playing Cricket", "Cooking", "Swimming"},
 	}
 
-	userJSON, err := json.Marshal(user)
+	userJSON, err := json.Marshal(User)
 	if err != nil {
 		t.Fatalf("Failed to marshal user object: %v", err)
 	}

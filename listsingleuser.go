@@ -14,7 +14,7 @@ import (
 )
 
 func getUser(w http.ResponseWriter, r *http.Request) {
-	// Retrieve the user ID from the URL path parameter
+
 	id := strings.TrimPrefix(r.URL.Path, "/users/")
 	if id == "" {
 		http.Error(w, "User ID not provided", http.StatusBadRequest)
@@ -37,15 +37,15 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 	filter := bson.M{"User_id": userID}
 
-	var user User
-	err = collection.FindOne(context.TODO(), filter).Decode(&user)
+	var User user
+	err = collection.FindOne(context.TODO(), filter).Decode(&User)
 	if err != nil {
 		log.Println("Error retrieving user:", err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	userJSON, err := json.Marshal(user)
+	userJSON, err := json.Marshal(User)
 	if err != nil {
 		log.Println("Error marshaling user to JSON:", err)
 		w.WriteHeader(http.StatusInternalServerError)

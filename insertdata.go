@@ -17,7 +17,7 @@ type address struct {
 	Country string `bson:"Country"`
 }
 
-type User struct {
+type user struct {
 	User_id int64    `bson:"User_id"`
 	Name    string   `bson:"Name"`
 	Phone   string   `bson:"Phone"`
@@ -26,15 +26,15 @@ type User struct {
 }
 
 func insertUser(w http.ResponseWriter, r *http.Request) {
-	var user User
+	var User user
 
-	err := json.NewDecoder(r.Body).Decode(&user)
+	err := json.NewDecoder(r.Body).Decode(&User)
 	if err != nil {
 		http.Error(w, "Failed to parse request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if user.Name == "" {
+	if User.Name == "" {
 		http.Error(w, "Invalid user: Name cannot be empty", http.StatusBadRequest)
 		return
 	}
@@ -47,7 +47,7 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 
 	collection := client.Database("testdb").Collection("users")
 
-	_, err = collection.InsertOne(context.TODO(), user)
+	_, err = collection.InsertOne(context.TODO(), User)
 	if err != nil {
 		log.Fatal(err)
 	}

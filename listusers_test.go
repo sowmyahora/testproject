@@ -17,7 +17,7 @@ func TestListUsers(t *testing.T) {
 	}
 	defer client.Disconnect(context.TODO())
 
-	users := []User{
+	Users := []user{
 		{
 			User_id: 890078,
 			Name:    "Sonia Khera",
@@ -45,7 +45,7 @@ func TestListUsers(t *testing.T) {
 	}
 
 	collection := client.Database("testdb").Collection("users")
-	for _, user := range users {
+	for _, user := range Users {
 		_, err := collection.InsertOne(context.TODO(), user)
 		if err != nil {
 			t.Fatalf("Failed to insert user: %v", err)
@@ -78,8 +78,9 @@ func TestListUsersInvalidData(t *testing.T) {
 	}
 	defer client.Disconnect(context.TODO())
 
-	users := []User{
+	Users := []user{
 		{
+
 			User_id: 890078,
 			Name:    "Sonia Khera",
 			Phone:   "9910470030",
@@ -106,7 +107,7 @@ func TestListUsersInvalidData(t *testing.T) {
 	}
 
 	collection := client.Database("testdb").Collection("users")
-	for _, user := range users {
+	for _, user := range Users {
 		_, err := collection.InsertOne(context.TODO(), user)
 		if err != nil {
 			t.Fatalf("Failed to insert user: %v", err)
