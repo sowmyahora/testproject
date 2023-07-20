@@ -21,7 +21,7 @@ func TestInsertUser(t *testing.T) {
 
 	user := User{
 		User_id: 90121,
-		Name:    "Ravi Tiwari",
+		Name:    "Ansh Tiwari",
 		Phone:   "8178860317",
 		Address: address{
 			Street:  "street 27",
