@@ -2,18 +2,16 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func TestListSingleUser(t *testing.T) {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := connect()
 	if err != nil {
-		t.Fatalf("Failed to connect to MongoDB: %v", err)
+		log.Fatal(err)
 	}
 	defer client.Disconnect(context.TODO())
 
@@ -72,9 +70,9 @@ func TestListSingleUser(t *testing.T) {
 }
 
 func TestListSingleUserInvalidData(t *testing.T) {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := connect()
 	if err != nil {
-		t.Fatalf("Failed to connect to MongoDB: %v", err)
+		log.Fatal(err)
 	}
 	defer client.Disconnect(context.TODO())
 

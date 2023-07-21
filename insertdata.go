@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type address struct {
@@ -39,7 +36,7 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := connect()
 	if err != nil {
 		log.Fatal(err)
 	}

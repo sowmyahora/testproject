@@ -8,8 +8,6 @@ import (
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +17,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := connect()
 	if err != nil {
 		log.Fatal(err)
 	}
