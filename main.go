@@ -7,8 +7,8 @@ import (
 
 func main() {
 
-	http.HandleFunc("/users/insert", insertUser)
-	http.HandleFunc("/users/update", updateUser)
+	http.HandleFunc("/users/insert", handleUser)
+	//http.HandleFunc("/users/insert", handleUser)
 	http.HandleFunc("/users", listUsers)
 	http.HandleFunc("/users/", getUser)
 	http.HandleFunc("/users/delete/", deleteUser)

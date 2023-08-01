@@ -35,7 +35,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Fatalf("Failed to marshal user object: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", "/users/update", bytes.NewBuffer(userJSON))
+	req, err := http.NewRequest("PUT", "/users/update", bytes.NewBuffer(userJSON))
 	if err != nil {
 		t.Fatalf("Failed to create request: %v", err)
 	}
@@ -79,7 +79,7 @@ func TestUpdateUserInvalidData(t *testing.T) {
 		t.Fatalf("Failed to marshal user object: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", "/users/update", bytes.NewBuffer(userJSON))
+	req, err := http.NewRequest("PUT", "/users/update", bytes.NewBuffer(userJSON))
 	if err != nil {
 		t.Fatalf("Failed to create request: %v", err)
 	}
