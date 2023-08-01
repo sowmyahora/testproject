@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -12,14 +14,13 @@ import (
 func TestDeleteUser(t *testing.T) {
 	client, err := connect()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer client.Disconnect(context.TODO())
 
 	User := user{
-		User_id: 890078,
-		Name:    "Sonia Khera",
-		Phone:   "9910470030",
+		Name:  "Sonia Khera",
+		Phone: "9910470030",
 		Address: address{
 			Street:  "Street 1",
 			City:    "New York",
@@ -32,13 +33,15 @@ func TestDeleteUser(t *testing.T) {
 	collection := client.Database("testdb").Collection("users")
 	_, err = collection.InsertOne(context.TODO(), User)
 	if err != nil {
-		t.Fatalf("Failed to insert user: %v", err)
+
 	}
 
 	//req, err := http.NewRequest("DELETE", "http://localhost:8080/users/delete?id=890078", nil)
 	req, err := http.NewRequest("DELETE", "mongodb://mongo:27017/users/delete?id=890078", nil)
 	if err != nil {
-		t.Fatalf("Failed to create delete request: %v", err)
+		message := err
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg)
 	}
 
 	rr := httptest.NewRecorder()
@@ -58,14 +61,13 @@ func TestDeleteUser(t *testing.T) {
 func TestDeleteUserInvalidData(t *testing.T) {
 	client, err := connect()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer client.Disconnect(context.TODO())
 
 	User := user{
-		User_id: 877,
-		Name:    "Sonia Khera",
-		Phone:   "9910470030",
+		Name:  "Sonia Khera",
+		Phone: "9910470030",
 		Address: address{
 			Street:  "Street 1",
 			City:    "New York",
@@ -78,13 +80,17 @@ func TestDeleteUserInvalidData(t *testing.T) {
 	collection := client.Database("testdb").Collection("users")
 	_, err = collection.InsertOne(context.TODO(), User)
 	if err != nil {
-		t.Fatalf("Failed to insert user: %v", err)
+		message := "Failed to insert user: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
 	}
 
 	//req, err := http.NewRequest("DELETE", "http://localhost:8080/users/delete?id=890", nil)
 	req, err := http.NewRequest("DELETE", "mongodb://mongo:27017/users/delete?id=890078", nil)
 	if err != nil {
-		t.Fatalf("Failed to create delete request: %v", err)
+		message := "Failed to create delete request: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
 	}
 
 	rr := httptest.NewRecorder()

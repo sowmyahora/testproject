@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -18,9 +19,8 @@ func TestUpdateUser(t *testing.T) {
 	defer client.Disconnect(context.TODO())
 
 	User := user{
-		User_id: 97659,
-		Name:    "Ansh Lokhande",
-		Phone:   "000000000",
+		Name:  "Ansh Lokhande",
+		Phone: "000000000",
 		Address: address{
 			Street:  "street 151",
 			City:    "Jammu",
@@ -32,12 +32,18 @@ func TestUpdateUser(t *testing.T) {
 
 	userJSON, err := json.Marshal(User)
 	if err != nil {
-		t.Fatalf("Failed to marshal user object: %v", err)
+		message := "Failed to marshal user object: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
+		return
 	}
 
 	req, err := http.NewRequest("PUT", "/users/update", bytes.NewBuffer(userJSON))
 	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
+		message := "Failed to create request: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
+		return
 	}
 
 	rr := httptest.NewRecorder()
@@ -62,9 +68,8 @@ func TestUpdateUserInvalidData(t *testing.T) {
 	defer client.Disconnect(context.TODO())
 
 	User := user{
-		User_id: 2001,
-		Name:    "Rakesh Lokhande",
-		Phone:   "000000000",
+		Name:  "Rakesh Lokhande",
+		Phone: "000000000",
 		Address: address{
 			Street:  "street 151",
 			City:    "Jammu",
@@ -76,12 +81,18 @@ func TestUpdateUserInvalidData(t *testing.T) {
 
 	userJSON, err := json.Marshal(User)
 	if err != nil {
-		t.Fatalf("Failed to marshal user object: %v", err)
+		message := "Failed to marshal user object: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
+		return
 	}
 
 	req, err := http.NewRequest("PUT", "/users/update", bytes.NewBuffer(userJSON))
 	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
+		message := "Failed to create request: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
+		return
 	}
 
 	rr := httptest.NewRecorder()

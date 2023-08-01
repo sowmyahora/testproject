@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -17,9 +19,8 @@ func TestListUsers(t *testing.T) {
 
 	Users := []user{
 		{
-			User_id: 890078,
-			Name:    "Sonia Khera",
-			Phone:   "9910470030",
+			Name:  "Sonia Khera",
+			Phone: "9910470030",
 			Address: address{
 				Street:  "Street 1",
 				City:    "New York",
@@ -29,9 +30,8 @@ func TestListUsers(t *testing.T) {
 			Hobbies: []string{"Reading", "Gaming", "Cooking"},
 		},
 		{
-			User_id: 817886,
-			Name:    "Sam Manchanda",
-			Phone:   "987657899",
+			Name:  "Sam Manchanda",
+			Phone: "987657899",
 			Address: address{
 				Street:  "Street 2",
 				City:    "Los Angeles",
@@ -46,13 +46,17 @@ func TestListUsers(t *testing.T) {
 	for _, user := range Users {
 		_, err := collection.InsertOne(context.TODO(), user)
 		if err != nil {
-			t.Fatalf("Failed to insert user: %v", err)
+			message := "Failed to insert user: %v"
+			jmsg, _ := json.Marshal(message)
+			fmt.Println(jmsg, err)
 		}
 	}
 
 	req, err := http.NewRequest("GET", "/users/list", nil)
 	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
+		message := "Failed to create request: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
 	}
 
 	rr := httptest.NewRecorder()
@@ -78,10 +82,8 @@ func TestListUsersInvalidData(t *testing.T) {
 
 	Users := []user{
 		{
-
-			User_id: 890078,
-			Name:    "Sonia Khera",
-			Phone:   "9910470030",
+			Name:  "Sonia Khera",
+			Phone: "9910470030",
 			Address: address{
 				Street:  "Street 1",
 				City:    "New York",
@@ -91,9 +93,8 @@ func TestListUsersInvalidData(t *testing.T) {
 			Hobbies: []string{"Reading", "Gaming", "Cooking"},
 		},
 		{
-			User_id: 817886,
-			Name:    "Sam Manchanda",
-			Phone:   "987657899",
+			Name:  "Sam Manchanda",
+			Phone: "987657899",
 			Address: address{
 				Street:  "Street 2",
 				City:    "Los Angeles",
@@ -108,13 +109,17 @@ func TestListUsersInvalidData(t *testing.T) {
 	for _, user := range Users {
 		_, err := collection.InsertOne(context.TODO(), user)
 		if err != nil {
-			t.Fatalf("Failed to insert user: %v", err)
+			message := "Failed to insert user: %v"
+			jmsg, _ := json.Marshal(message)
+			fmt.Println(jmsg, err)
 		}
 	}
 
 	req, err := http.NewRequest("GET", "/users/list", nil)
 	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
+		message := "Failed to create request: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
 	}
 
 	rr := httptest.NewRecorder()

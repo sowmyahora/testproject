@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,15 +14,26 @@ import (
 
 func getUser(w http.ResponseWriter, r *http.Request) {
 
+	if r.Method != http.MethodGet {
+		message := "Method not allowed"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusBadRequest)
+		return
+	}
+
 	id := strings.TrimPrefix(r.URL.Path, "/users/")
 	if id == "" {
-		http.Error(w, "User ID not provided", http.StatusBadRequest)
+		message := "User ID not provided"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusBadRequest)
 		return
 	}
 
 	userID, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid User ID", http.StatusBadRequest)
+		message := "Invalid User ID"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusBadRequest)
 		return
 	}
 
@@ -38,15 +50,17 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	var User user
 	err = collection.FindOne(context.TODO(), filter).Decode(&User)
 	if err != nil {
-		log.Println("Error retrieving user:", err)
-		w.WriteHeader(http.StatusNotFound)
+		message := "Error retrieving user:"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err, http.StatusNotFound)
 		return
 	}
 
 	userJSON, err := json.Marshal(User)
 	if err != nil {
-		log.Println("Error marshaling user to JSON:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		message := "Error marshaling user to JSON:"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusInternalServerError)
 		return
 	}
 

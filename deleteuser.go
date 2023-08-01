@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -11,31 +11,36 @@ import (
 )
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodDelete {
+		message := "Method not allowed"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusMethodNotAllowed)
+		return
+	}
 	params := r.URL.Query()
 	userID := params.Get("id")
 	userIDInt, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		message := "Invalid user ID"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusMethodNotAllowed)
 		return
 	}
 
 	client, err := connect()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	defer client.Disconnect(context.TODO())
 
 	collection := client.Database("testdb").Collection("users")
 
 	filter := bson.M{"User_id": userIDInt}
-	result, err := collection.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	if result.DeletedCount == 0 {
-		http.NotFound(w, r)
-		return
+	_, err = collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	response := struct {

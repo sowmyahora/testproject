@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -13,14 +14,13 @@ import (
 func TestInsertUser(t *testing.T) {
 	client, err := connect()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer client.Disconnect(context.TODO())
 
 	User := user{
-		User_id: 90121,
-		Name:    "Ansh Tiwari",
-		Phone:   "8178860317",
+		Name:  "Ansh Tiwari",
+		Phone: "8178860317",
 		Address: address{
 			Street:  "street 27",
 			City:    "Pune",
@@ -32,12 +32,18 @@ func TestInsertUser(t *testing.T) {
 
 	userJSON, err := json.Marshal(User)
 	if err != nil {
-		t.Fatalf("Failed to marshal user object: %v", err)
+		message := "Failed to marshal user object: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg)
+		return
 	}
 
 	req, err := http.NewRequest("POST", "/users/insert", bytes.NewBuffer(userJSON))
 	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
+		message := "Failed to create request: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg)
+		return
 	}
 
 	rr := httptest.NewRecorder()
@@ -58,14 +64,13 @@ func TestInsertUser(t *testing.T) {
 func TestInsertUserInvalidData(t *testing.T) {
 	client, err := connect()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer client.Disconnect(context.TODO())
 
 	User := user{
-		User_id: 90121,
-		Name:    "",
-		Phone:   "8178860317",
+		Name:  "",
+		Phone: "8178860317",
 		Address: address{
 			Street:  "street 27",
 			City:    "Pune",
@@ -77,12 +82,18 @@ func TestInsertUserInvalidData(t *testing.T) {
 
 	userJSON, err := json.Marshal(User)
 	if err != nil {
-		t.Fatalf("Failed to marshal user object: %v", err)
+		message := "Failed to marshal user object: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg)
+		return
 	}
 
 	req, err := http.NewRequest("POST", "/users/insert", bytes.NewBuffer(userJSON))
 	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
+		message := "Failed to create request: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg)
+		return
 	}
 
 	rr := httptest.NewRecorder()

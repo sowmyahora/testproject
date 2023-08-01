@@ -13,18 +13,18 @@ import (
 )
 
 type address struct {
-	Street  string `bson:"Street"`
-	City    string `bson:"City"`
-	State   string `bson:"State"`
-	Country string `bson:"Country"`
+	Street  string `bson:"street" json:"street"`
+	City    string `bson:"city" json:"city"`
+	State   string `bson:"state" json:"state"`
+	Country string `bson:"country" json:"country"`
 }
 
 type user struct {
-	User_id int64    `bson:"User_id"`
-	Name    string   `bson:"Name"`
-	Phone   string   `bson:"Phone"`
-	Address address  `bson:"Address"`
-	Hobbies []string `bson:"Hobbies"`
+	UserID  int64    `bson:"user_id" json:"user_id"`
+	Name    string   `bson:"name" json:"name"`
+	Phone   string   `bson:"phone" json:"phone"`
+	Address address  `bson:"address" json:"address"`
+	Hobbies []string `bson:"hobbies" json:"hobbies"`
 }
 
 func handleUser(w http.ResponseWriter, r *http.Request) {
@@ -34,66 +34,16 @@ func handleUser(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		insertUser(w, r)
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		message := "Method not allowed"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusMethodNotAllowed)
 	}
 }
 
 func insertUser(w http.ResponseWriter, r *http.Request) {
 
+	validate(r)
 	var User user
-
-	err := json.NewDecoder(r.Body).Decode(&User)
-	if err != nil {
-		http.Error(w, "Failed to parse request body: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if User.Name == "" {
-		http.Error(w, "Invalid user: Name cannot be empty", http.StatusBadRequest)
-		return
-	}
-
-	if User.Phone == "" {
-		http.Error(w, "Invalid user: Phone cannot be empty", http.StatusBadRequest)
-		return
-	}
-
-	if !isNumeric(User.Phone) {
-		http.Error(w, "Invalid user: Phone number must contain only numeric digits", http.StatusBadRequest)
-		return
-	}
-
-	if User.Address.Street == "" {
-		http.Error(w, "Invalid user: Street in address cannot be empty", http.StatusBadRequest)
-		return
-	}
-
-	if User.Address.City == "" {
-		http.Error(w, "Invalid user: City in address cannot be empty", http.StatusBadRequest)
-		return
-	}
-
-	if User.Address.State == "" {
-		http.Error(w, "Invalid user: State in address cannot be empty", http.StatusBadRequest)
-		return
-	}
-
-	if User.Address.Country == "" {
-		http.Error(w, "Invalid user: Country in address cannot be empty", http.StatusBadRequest)
-		return
-	}
-
-	if len(User.Hobbies) == 0 {
-		http.Error(w, "Invalid user: At least one hobby is required", http.StatusBadRequest)
-		return
-	}
-
-	for _, hobby := range User.Hobbies {
-		if hobby == "" {
-			http.Error(w, "Invalid user: Hobbies cannot have empty values", http.StatusBadRequest)
-			return
-		}
-	}
 
 	client, err := connect()
 	if err != nil {
@@ -106,12 +56,10 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 	filter := bson.M{"_id": "user_id"}
 
 	update := bson.M{"$inc": bson.M{"seq": 1}}
-	after := options.After
-	opt := options.FindOneAndUpdateOptions{
-		ReturnDocument: &after,
-	}
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(true)
 
-	result := countersCollection.FindOneAndUpdate(context.Background(), filter, update, &opt)
+	result := countersCollection.FindOneAndUpdate(context.Background(), filter, update, opt)
+
 	if result.Err() != nil {
 		fmt.Println("Findoneandupdate")
 		log.Println(result.Err())
@@ -122,16 +70,20 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = result.Decode(&counterDoc)
 	if err != nil {
-		log.Println(err)
+		message := err
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg)
 	}
 
-	User.User_id = counterDoc.Seq
+	User.UserID = counterDoc.Seq
 
 	collection := client.Database("testdb").Collection("users")
 
 	_, err = collection.InsertOne(context.TODO(), User)
 	if err != nil {
-		log.Println(err)
+		message := err
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg)
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -158,15 +110,21 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	userIDStr := queryParams.Get("user_id")
 	if userIDStr == "" {
-		http.Error(w, "Missing 'user_id' query parameter", http.StatusBadRequest)
+		message := "Missing 'user_id' query parameter"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusBadRequest)
 		return
 	}
 
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid 'user_id' query parameter", http.StatusBadRequest)
+		message := "Invalid 'user_id' query parameter"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusBadRequest)
 		return
 	}
+
+	validate(r)
 
 	client, err := connect()
 	if err != nil {
@@ -175,38 +133,31 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	defer client.Disconnect(context.Background())
 
 	collection := client.Database("testdb").Collection("users")
-	filter := bson.M{"User_id": userID}
+	filter := bson.M{"user_id": userID}
 
-	var existingUser user
-	err = collection.FindOne(context.Background(), filter).Decode(&existingUser)
-	if err != nil {
-		log.Println("Error retrieving user:", err)
-		http.Error(w, "User not found", http.StatusNotFound)
+	var userToUpdate map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&userToUpdate); err != nil {
+		message := "Failed to parse request body"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("Existing user: %+v", existingUser)
-
-	var User user
-	if err := json.NewDecoder(r.Body).Decode(&User); err != nil {
-		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
-		return
-	}
-
-	update := bson.M{"$set": bson.M{
-		"Name":    User.Name,
-		"Phone":   User.Phone,
-		"Address": User.Address,
-		"Hobbies": User.Hobbies,
-	}}
+	delete(userToUpdate, "user_id")
+	update := bson.M{"$set": userToUpdate}
 
 	result, err := collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		log.Fatal(err)
+		message := "Failed to update user"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusInternalServerError)
+		return
 	}
 
-	if result.ModifiedCount == 0 {
-		http.Error(w, "User not found", http.StatusNotFound)
+	if result.MatchedCount == 0 {
+		message := "user not found"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusBadRequest)
 		return
 	}
 
