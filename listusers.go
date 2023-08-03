@@ -10,6 +10,9 @@ import (
 )
 
 func listUsers(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
 	client, err := connect()
 	if err != nil {
 		log.Fatal(err)
@@ -18,30 +21,44 @@ func listUsers(w http.ResponseWriter, r *http.Request) {
 
 	collection := client.Database("testdb").Collection("users")
 
-	cursor, err := collection.Find(context.TODO(), bson.M{})
+	cursor, err := collection.Find(ctx, bson.M{})
+
 	if err != nil {
-		log.Println("Error retrieving users:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		response := httpresponse{
+			Message: "Error retrieving users:",
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+
 		return
 	}
-	defer cursor.Close(context.TODO())
+	defer cursor.Close(ctx)
 
 	var Users []user
-	for cursor.Next(context.TODO()) {
+	for cursor.Next(ctx) {
 		var User user
 		err := cursor.Decode(&User)
 		if err != nil {
-			log.Println("Error decoding user:", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			response := httpresponse{
+				Message: "error",
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(response)
+
 			return
+
 		}
 		Users = append(Users, User)
 	}
 
 	usersJSON, err := json.Marshal(Users)
 	if err != nil {
-		log.Println("Error marshaling users to JSON:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		response := httpresponse{
+			Message: "Error marshaling users to JSON:",
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+
 		return
 	}
 

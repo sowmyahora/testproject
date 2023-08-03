@@ -3,36 +3,43 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type address struct {
-	Street  string `bson:"Street"`
-	City    string `bson:"City"`
-	State   string `bson:"State"`
-	Country string `bson:"Country"`
+	Street  string `bson:"street" json:"street"`
+	City    string `bson:"city" json:"city"`
+	State   string `bson:"state" json:"state"`
+	Country string `bson:"country" json:"country"`
 }
 
 type user struct {
-	User_id int64    `bson:"User_id"`
-	Name    string   `bson:"Name"`
-	Phone   string   `bson:"Phone"`
-	Address address  `bson:"Address"`
-	Hobbies []string `bson:"Hobbies"`
+	UserID  int64    `bson:"user_id" json:"user_id"`
+	Name    string   `bson:"name" json:"name"`
+	Phone   string   `bson:"phone" json:"phone"`
+	Address address  `bson:"address" json:"address"`
+	Hobbies []string `bson:"hobbies" json:"hobbies"`
+}
+
+type httpresponse struct {
+	Message string `json:"message"`
 }
 
 func insertUser(w http.ResponseWriter, r *http.Request) {
-	var User user
 
-	err := json.NewDecoder(r.Body).Decode(&User)
+	User, err := validateInsertRequest(r)
 	if err != nil {
-		http.Error(w, "Failed to parse request body: "+err.Error(), http.StatusBadRequest)
-		return
-	}
+		response := httpresponse{
+			Message: err.Error(),
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
 
-	if User.Name == "" {
-		http.Error(w, "Invalid user: Name cannot be empty", http.StatusBadRequest)
 		return
 	}
 
@@ -42,13 +49,49 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer client.Disconnect(context.TODO())
 
+	countersCollection := client.Database("testdb").Collection("counters")
+
+	filter := bson.M{"_id": "user_id"}
+
+	update := bson.M{"$inc": bson.M{"seq": 1}}
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(true)
+
+	result := countersCollection.FindOneAndUpdate(context.Background(), filter, update, opt)
+
+	if result.Err() != nil {
+		fmt.Println("Findoneandupdate")
+		log.Println(result.Err())
+	}
+
+	var counterDoc struct {
+		Seq int64 `bson:"seq"`
+	}
+	err = result.Decode(&counterDoc)
+	if err != nil {
+		message := err
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(string(jmsg))
+	}
+
+	User.UserID = counterDoc.Seq
+
 	collection := client.Database("testdb").Collection("users")
 
 	_, err = collection.InsertOne(context.TODO(), User)
 	if err != nil {
-		log.Fatal(err)
+		response := httpresponse{
+			Message: err.Error(),
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("User created successfully"))
+
+	response := httpresponse{
+		Message: "user inserted successfully",
+	}
+	json.NewEncoder(w).Encode(response)
 }

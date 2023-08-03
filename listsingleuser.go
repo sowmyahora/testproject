@@ -1,27 +1,28 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func getUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-	id := strings.TrimPrefix(r.URL.Path, "/users/")
-	if id == "" {
-		http.Error(w, "User ID not provided", http.StatusBadRequest)
-		return
-	}
+	userIDstr := mux.Vars(r)["user_id"]
 
-	userID, err := strconv.ParseInt(id, 10, 64)
+	userID, err := strconv.ParseInt(userIDstr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid User ID", http.StatusBadRequest)
+		message := "Invalid User ID"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, http.StatusBadRequest)
 		return
 	}
 
@@ -29,24 +30,41 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Disconnect(context.TODO())
+	defer client.Disconnect(ctx)
 
 	collection := client.Database("testdb").Collection("users")
 
-	filter := bson.M{"User_id": userID}
+	filter := bson.M{"user_id": userID}
 
 	var User user
-	err = collection.FindOne(context.TODO(), filter).Decode(&User)
+	err = collection.FindOne(ctx, filter).Decode(&User)
+
 	if err != nil {
-		log.Println("Error retrieving user:", err)
-		w.WriteHeader(http.StatusNotFound)
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			response := httpresponse{
+				Message: "user does not exists",
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(response)
+			return
+		}
+
+		response := httpresponse{
+			Message: err.Error(),
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(response)
 		return
+
 	}
 
 	userJSON, err := json.Marshal(User)
 	if err != nil {
-		log.Println("Error marshaling user to JSON:", err)
+		response := httpresponse{
+			Message: err.Error(),
+		}
 		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 

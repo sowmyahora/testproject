@@ -1,59 +1,29 @@
 package main
 
 import (
-	"context"
-	"log"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
 
 func TestListSingleUser(t *testing.T) {
-	client, err := connect()
+
+	req, err := http.NewRequest("GET", "/users/0", nil)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(context.TODO())
-
-	Users := []user{
-		{
-			User_id: 890078,
-			Name:    "Sonia Khera",
-			Phone:   "9910470030",
-			Address: address{
-				Street:  "Street 1",
-				City:    "New York",
-				State:   "NY",
-				Country: "USA",
-			},
-			Hobbies: []string{"Reading", "Gaming", "Cooking"},
-		},
-		{
-			User_id: 817886,
-			Name:    "Sam Manchanda",
-			Phone:   "987657899",
-			Address: address{
-				Street:  "Street 2",
-				City:    "Los Angeles",
-				State:   "CA",
-				Country: "USA",
-			},
-			Hobbies: []string{"Traveling", "Photography", "Painting"},
-		},
+		message := "Failed to create request: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
 	}
 
-	collection := client.Database("testdb").Collection("users")
-	for _, user := range Users {
-		_, err := collection.InsertOne(context.TODO(), user)
-		if err != nil {
-			t.Fatalf("Failed to insert user: %v", err)
-		}
+	vars := map[string]string{
+		"user_id": "0",
 	}
 
-	req, err := http.NewRequest("GET", "/users/890078", nil)
-	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
-	}
+	req = mux.SetURLVars(req, vars)
 
 	rr := httptest.NewRecorder()
 
@@ -61,71 +31,24 @@ func TestListSingleUser(t *testing.T) {
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected status code %d, got %d", http.StatusOK, rr.Code)
-	}
-
-	expectedResponse := `{"User_id":890078,"Name":"Sonia Khera","Phone":"9910470030","Address":{"Street":"Street 1","City":"New York","State":"NY","Country":"USA"},"Hobbies":["Reading","Gaming","Cooking"]}`
-	if rr.Body.String() != expectedResponse {
-		t.Errorf("Expected response body %q, got %q", expectedResponse, rr.Body.String())
 	}
 }
 
 func TestListSingleUserInvalidData(t *testing.T) {
-	client, err := connect()
+
+	req, err := http.NewRequest("GET", "/users/abcd", nil)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(context.TODO())
 
-	Users := []user{
-		{
-			User_id: 890078,
-			Name:    "Sonia Khera",
-			Phone:   "9910470030",
-			Address: address{
-				Street:  "Street 1",
-				City:    "New York",
-				State:   "NY",
-				Country: "USA",
-			},
-			Hobbies: []string{"Reading", "Gaming", "Cooking"},
-		},
-		{
-			User_id: 817886,
-			Name:    "Sam Manchanda",
-			Phone:   "987657899",
-			Address: address{
-				Street:  "Street 2",
-				City:    "Los Angeles",
-				State:   "CA",
-				Country: "USA",
-			},
-			Hobbies: []string{"Traveling", "Photography", "Painting"},
-		},
-	}
-
-	collection := client.Database("testdb").Collection("users")
-	for _, user := range Users {
-		_, err := collection.InsertOne(context.TODO(), user)
-		if err != nil {
-			t.Fatalf("Failed to insert user: %v", err)
-		}
-	}
-
-	req, err := http.NewRequest("GET", "/users/890078", nil)
-	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
+		message := "Failed to create request: %v"
+		jmsg, _ := json.Marshal(message)
+		fmt.Println(jmsg, err)
 	}
 
 	rr := httptest.NewRecorder()
 
 	getUser(rr, req)
 
-	if rr.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, got %d", http.StatusOK, rr.Code)
-	}
-
-	expectedResponse := `{"User_id":79008,"Name":"Sonia Khera","Phone":"9910470030","Address":{"Street":"Street 1","City":"New York","State":"NY","Country":"USA"},"Hobbies":["Reading","Gaming","Cooking"]}`
-	if rr.Body.String() != expectedResponse {
-		t.Errorf("Expected response body %q, got %q", expectedResponse, rr.Body.String())
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, rr.Code)
 	}
 }

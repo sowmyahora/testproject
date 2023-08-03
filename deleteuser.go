@@ -1,47 +1,54 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-	params := r.URL.Query()
-	userID := params.Get("id")
-	userIDInt, err := strconv.ParseInt(userID, 10, 64)
+
+	ctx := r.Context()
+
+	userIDstr := mux.Vars(r)["user_id"]
+
+	userID, err := strconv.ParseInt(userIDstr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		response := httpresponse{
+			Message: "Invalid User ID",
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+
 		return
 	}
 
 	client, err := connect()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
-	defer client.Disconnect(context.TODO())
+	defer client.Disconnect(ctx)
 
 	collection := client.Database("testdb").Collection("users")
 
-	filter := bson.M{"User_id": userIDInt}
-	result, err := collection.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		log.Fatal(err)
-	}
+	filter := bson.M{"user_id": userID}
 
-	if result.DeletedCount == 0 {
-		http.NotFound(w, r)
+	_, err = collection.DeleteOne(ctx, filter)
+	if err != nil {
+		response := httpresponse{
+			Message: err.Error(),
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
-	response := struct {
-		Message string `json:"message"`
-	}{
-		Message: "User deleted successfully",
+	response := httpresponse{
+		Message: "user deleted successfully",
 	}
 	json.NewEncoder(w).Encode(response)
 }
