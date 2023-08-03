@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -12,12 +11,8 @@ import (
 
 func listUsers(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != http.MethodGet {
-		message := "Method not allowed"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusMethodNotAllowed)
-		return
-	}
+	ctx := r.Context()
+
 	client, err := connect()
 	if err != nil {
 		log.Fatal(err)
@@ -26,25 +21,30 @@ func listUsers(w http.ResponseWriter, r *http.Request) {
 
 	collection := client.Database("testdb").Collection("users")
 
-	cursor, err := collection.Find(context.TODO(), bson.M{})
+	cursor, err := collection.Find(ctx, bson.M{})
+
 	if err != nil {
-		message := ("Error retrieving users:")
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		response := httpresponse{
+			Message: "Error retrieving users:",
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+
 		return
 	}
-	defer cursor.Close(context.TODO())
+	defer cursor.Close(ctx)
 
 	var Users []user
-	for cursor.Next(context.TODO()) {
+	for cursor.Next(ctx) {
 		var User user
 		err := cursor.Decode(&User)
 		if err != nil {
-			message := "error"
-			jmsg, _ := json.Marshal(message)
-			fmt.Println(jmsg)
-			w.WriteHeader(http.StatusInternalServerError)
+			response := httpresponse{
+				Message: "error",
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(response)
+
 			return
 
 		}
@@ -53,10 +53,12 @@ func listUsers(w http.ResponseWriter, r *http.Request) {
 
 	usersJSON, err := json.Marshal(Users)
 	if err != nil {
-		message := "Error marshaling users to JSON:"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusMethodNotAllowed)
-		w.WriteHeader(http.StatusInternalServerError)
+		response := httpresponse{
+			Message: "Error marshaling users to JSON:",
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+
 		return
 	}
 

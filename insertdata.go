@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -27,23 +26,22 @@ type user struct {
 	Hobbies []string `bson:"hobbies" json:"hobbies"`
 }
 
-func handleUser(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPut:
-		updateUser(w, r)
-	case http.MethodPost:
-		insertUser(w, r)
-	default:
-		message := "Method not allowed"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusMethodNotAllowed)
-	}
+type httpresponse struct {
+	Message string `json:"message"`
 }
 
 func insertUser(w http.ResponseWriter, r *http.Request) {
 
-	validate(r)
-	var User user
+	User, err := validateInsertRequest(r)
+	if err != nil {
+		response := httpresponse{
+			Message: err.Error(),
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+
+		return
+	}
 
 	client, err := connect()
 	if err != nil {
@@ -72,7 +70,7 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		message := err
 		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg)
+		fmt.Println(string(jmsg))
 	}
 
 	User.UserID = counterDoc.Seq
@@ -81,92 +79,19 @@ func insertUser(w http.ResponseWriter, r *http.Request) {
 
 	_, err = collection.InsertOne(context.TODO(), User)
 	if err != nil {
-		message := err
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg)
+		response := httpresponse{
+			Message: err.Error(),
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
 
-	response := struct {
-		Message string `json:"message"`
-	}{
-		Message: "User inserted successfully",
-	}
-	json.NewEncoder(w).Encode(response)
-}
-
-func isNumeric(s string) bool {
-	for _, c := range s {
-		if c < '0' || c > '9' {
-			return false
-		}
-	}
-	return true
-}
-
-func updateUser(w http.ResponseWriter, r *http.Request) {
-
-	queryParams := r.URL.Query()
-	userIDStr := queryParams.Get("user_id")
-	if userIDStr == "" {
-		message := "Missing 'user_id' query parameter"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusBadRequest)
-		return
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
-	if err != nil {
-		message := "Invalid 'user_id' query parameter"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusBadRequest)
-		return
-	}
-
-	validate(r)
-
-	client, err := connect()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(context.Background())
-
-	collection := client.Database("testdb").Collection("users")
-	filter := bson.M{"user_id": userID}
-
-	var userToUpdate map[string]interface{}
-	if err := json.NewDecoder(r.Body).Decode(&userToUpdate); err != nil {
-		message := "Failed to parse request body"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusInternalServerError)
-		return
-	}
-
-	delete(userToUpdate, "user_id")
-	update := bson.M{"$set": userToUpdate}
-
-	result, err := collection.UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		message := "Failed to update user"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusInternalServerError)
-		return
-	}
-
-	if result.MatchedCount == 0 {
-		message := "user not found"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusBadRequest)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-
-	response := struct {
-		Message string `json:"message"`
-	}{
-		Message: "User updated successfully",
+	response := httpresponse{
+		Message: "user inserted successfully",
 	}
 	json.NewEncoder(w).Encode(response)
 }

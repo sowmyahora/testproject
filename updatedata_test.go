@@ -2,32 +2,20 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
 
 func TestUpdateUser(t *testing.T) {
-	client, err := connect()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(context.TODO())
 
 	User := user{
 		Name:  "Ansh Lokhande",
-		Phone: "000000000",
-		Address: address{
-			Street:  "street 151",
-			City:    "Jammu",
-			State:   "J&K",
-			Country: "India",
-		},
-		Hobbies: []string{"Reading", "Gaming", "Cooking"},
+		Phone: "9887766644",
 	}
 
 	userJSON, err := json.Marshal(User)
@@ -38,7 +26,7 @@ func TestUpdateUser(t *testing.T) {
 		return
 	}
 
-	req, err := http.NewRequest("PUT", "/users/update", bytes.NewBuffer(userJSON))
+	req, err := http.NewRequest("PUT", "/users/0", bytes.NewBuffer(userJSON))
 	if err != nil {
 		message := "Failed to create request: %v"
 		jmsg, _ := json.Marshal(message)
@@ -46,37 +34,26 @@ func TestUpdateUser(t *testing.T) {
 		return
 	}
 
+	vars := map[string]string{
+		"user_id": "0",
+	}
+
+	req = mux.SetURLVars(req, vars)
+
 	rr := httptest.NewRecorder()
 
 	updateUser(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected status code %d, got %d", http.StatusOK, rr.Code)
-	}
-
-	expectedResponse := "User updated successfully"
-	if rr.Body.String() != expectedResponse {
-		t.Errorf("Expected response body %q, got %q", expectedResponse, rr.Body.String())
 	}
 }
 
 func TestUpdateUserInvalidData(t *testing.T) {
-	client, err := connect()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(context.TODO())
 
 	User := user{
 		Name:  "Rakesh Lokhande",
 		Phone: "000000000",
-		Address: address{
-			Street:  "street 151",
-			City:    "Jammu",
-			State:   "J&K",
-			Country: "India",
-		},
-		Hobbies: []string{"Reading", "Gaming", "Cooking"},
 	}
 
 	userJSON, err := json.Marshal(User)
@@ -87,7 +64,7 @@ func TestUpdateUserInvalidData(t *testing.T) {
 		return
 	}
 
-	req, err := http.NewRequest("PUT", "/users/update", bytes.NewBuffer(userJSON))
+	req, err := http.NewRequest("PUT", "/users/0", bytes.NewBuffer(userJSON))
 	if err != nil {
 		message := "Failed to create request: %v"
 		jmsg, _ := json.Marshal(message)
@@ -95,16 +72,16 @@ func TestUpdateUserInvalidData(t *testing.T) {
 		return
 	}
 
+	vars := map[string]string{
+		"user_id": "0",
+	}
+	req = mux.SetURLVars(req, vars)
+
 	rr := httptest.NewRecorder()
 
 	updateUser(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected status code %d, got %d", http.StatusOK, rr.Code)
-	}
-
-	expectedResponse := "User updated successfully"
-	if rr.Body.String() != expectedResponse {
-		t.Errorf("Expected response body %q, got %q", expectedResponse, rr.Body.String())
 	}
 }

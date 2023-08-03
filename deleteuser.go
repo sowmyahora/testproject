@@ -1,30 +1,29 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != http.MethodDelete {
-		message := "Method not allowed"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusMethodNotAllowed)
-		return
-	}
-	params := r.URL.Query()
-	userID := params.Get("id")
-	userIDInt, err := strconv.ParseInt(userID, 10, 64)
+	ctx := r.Context()
+
+	userIDstr := mux.Vars(r)["user_id"]
+
+	userID, err := strconv.ParseInt(userIDstr, 10, 64)
 	if err != nil {
-		message := "Invalid user ID"
-		jmsg, _ := json.Marshal(message)
-		fmt.Println(jmsg, http.StatusMethodNotAllowed)
+		response := httpresponse{
+			Message: "Invalid User ID",
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+
 		return
 	}
 
@@ -32,21 +31,24 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer client.Disconnect(context.TODO())
+	defer client.Disconnect(ctx)
 
 	collection := client.Database("testdb").Collection("users")
 
-	filter := bson.M{"User_id": userIDInt}
+	filter := bson.M{"user_id": userID}
 
-	_, err = collection.DeleteOne(context.TODO(), filter)
+	_, err = collection.DeleteOne(ctx, filter)
 	if err != nil {
-		fmt.Println(err)
+		response := httpresponse{
+			Message: err.Error(),
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(response)
+		return
 	}
 
-	response := struct {
-		Message string `json:"message"`
-	}{
-		Message: "User deleted successfully",
+	response := httpresponse{
+		Message: "user deleted successfully",
 	}
 	json.NewEncoder(w).Encode(response)
 }
